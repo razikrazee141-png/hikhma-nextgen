@@ -626,7 +626,7 @@ export default function AdmissionForm() {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto min-w-[320px] flex items-center justify-center gap-3 px-9 py-4 rounded-xl font-bold uppercase tracking-wider text-xs sm:text-sm text-primary bg-gradient-to-r from-gold-400 via-gold to-gold-400 hover:from-gold hover:to-gold-600 shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed mx-auto border border-gold-300"
+                  className="w-full sm:w-auto sm:min-w-[320px] max-w-full flex items-center justify-center gap-3 px-6 sm:px-9 py-4 rounded-xl font-bold uppercase tracking-wider text-xs sm:text-sm text-primary bg-gradient-to-r from-gold-400 via-gold to-gold-400 hover:from-gold hover:to-gold-600 shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed mx-auto border border-gold-300"
                 >
                   {isSubmitting ? (
                     <>

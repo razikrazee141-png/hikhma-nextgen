@@ -6,15 +6,18 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const handleScrollTo = (e, href) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
+    if (window.location.pathname !== '/') {
+      window.location.href = '/' + href;
+      return;
+    }
     const targetElement = document.querySelector(href);
     if (targetElement) {
-      const navOffset = 85;
-      const elementPosition = targetElement.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
-
+      const headerEl = document.querySelector('header');
+      const headerHeight = headerEl ? headerEl.offsetHeight : 75;
+      const targetTop = targetElement.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({
-        top: offsetPosition,
+        top: Math.max(0, targetTop - headerHeight),
         behavior: 'smooth'
       });
     }

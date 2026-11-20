@@ -17,14 +17,14 @@ import {
 
 export default function Hero() {
   const handleScrollTo = (e, id) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const el = document.querySelector(id);
     if (el) {
-      const navOffset = 85;
-      const elementPosition = el.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      const headerEl = document.querySelector('header');
+      const headerHeight = headerEl ? headerEl.offsetHeight : 75;
+      const targetTop = el.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({
-        top: offsetPosition,
+        top: Math.max(0, targetTop - headerHeight),
         behavior: 'smooth'
       });
     }

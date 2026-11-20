@@ -74,11 +74,11 @@ export default function Curriculum() {
   const handleEnquireWithCourse = (courseName) => {
     const el = document.querySelector('#enquiry');
     if (el) {
-      const navOffset = 85;
-      const elementPosition = el.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      const headerEl = document.querySelector('header');
+      const headerHeight = headerEl ? headerEl.offsetHeight : 75;
+      const targetTop = el.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({
-        top: offsetPosition,
+        top: Math.max(0, targetTop - headerHeight),
         behavior: 'smooth'
       });
     }
