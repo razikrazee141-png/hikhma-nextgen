@@ -40,6 +40,7 @@ import {
   fetchAdmissionEnquiries, 
   updateEnquiryStatus, 
   createSampleAdmissionEnquiry,
+  syncPendingLocalEnquiries,
   supabase 
 } from '../lib/supabase';
 import Logo from '../components/Logo';
@@ -63,10 +64,8 @@ export default function AdminPage() {
   const [fiqhFilter, setFiqhFilter] = useState('all');
   const [selectedEnquiry, setSelectedEnquiry] = useState(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
-  const [isRlsRestricted, setIsRlsRestricted] = useState(false);
   const [supabaseCount, setSupabaseCount] = useState(0);
   const [localCount, setLocalCount] = useState(0);
-  const [copiedSql, setCopiedSql] = useState(false);
 
   // 1. Check existing session on load
   useEffect(() => {
@@ -77,7 +76,7 @@ export default function AdminPage() {
       setLoadingSession(false);
 
       if (activeSession) {
-        loadEnquiries();
+        loadEnquiries(false);
       }
     }
     checkAuth();
@@ -87,21 +86,63 @@ export default function AdminPage() {
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
         setSession(currentSession);
         if (currentSession) {
-          loadEnquiries();
+          loadEnquiries(false);
         }
       });
       return () => subscription.unsubscribe();
     }
   }, []);
 
-  // 2. Load admission enquiries
-  const loadEnquiries = async () => {
-    setLoadingData(true);
+  // 2. Real-time updates & cross-device auto-refresh
+  useEffect(() => {
+    if (!session) return;
+
+    // Supabase Real-time listener: instantly reflect submissions from other devices
+    let channel = null;
+    if (supabase) {
+      channel = supabase
+        .channel('admin-admission-enquiries-realtime')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'admission_enquiries' },
+          () => {
+            loadEnquiries(true);
+          }
+        )
+        .subscribe();
+    }
+
+    // Auto-refresh interval (every 15s) for mobile consistency & offline catchup
+    const intervalId = setInterval(() => {
+      loadEnquiries(true);
+    }, 15000);
+
+    // Refresh when admin switches back to this tab
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        loadEnquiries(true);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', handleVisibility);
+
+    return () => {
+      if (channel && supabase) {
+        supabase.removeChannel(channel);
+      }
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', handleVisibility);
+    };
+  }, [session]);
+
+  // 3. Load admission enquiries
+  const loadEnquiries = async (isSilent = false) => {
+    if (!isSilent) setLoadingData(true);
     setDataError('');
     const res = await fetchAdmissionEnquiries();
     if (res.success) {
       setEnquiries(res.data);
-      setIsRlsRestricted(Boolean(res.isRlsRestricted));
       setSupabaseCount(res.supabaseCount || 0);
       setLocalCount(res.localCount || 0);
       if (res.supabaseError) {
@@ -110,18 +151,13 @@ export default function AdminPage() {
     } else {
       setDataError(res.error || res.supabaseError || 'Failed to load admission enquiries from database.');
     }
-    setLoadingData(false);
+    if (!isSilent) setLoadingData(false);
   };
 
-  const handleAddSample = () => {
-    createSampleAdmissionEnquiry();
-    loadEnquiries();
-  };
-
-  const copySql = () => {
-    navigator.clipboard.writeText('ALTER TABLE public.admission_enquiries DISABLE ROW LEVEL SECURITY;');
-    setCopiedSql(true);
-    setTimeout(() => setCopiedSql(false), 2500);
+  const handleAddSample = async () => {
+    setLoadingData(true);
+    await createSampleAdmissionEnquiry();
+    await loadEnquiries(false);
   };
 
   // 3. Handle login submission
@@ -564,63 +600,22 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Supabase Row Level Security Alert (when RLS prevents queries) */}
-        {isRlsRestricted && (
-          <div className="p-5 rounded-2xl bg-amber-500/10 border-2 border-amber-500/40 text-amber-900 shadow-xs space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-                <h4 className="font-bold text-sm text-amber-950 font-serif">
-                  Supabase Enquiries Not Reflecting? Enable Read Access in Supabase
-                </h4>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={copySql}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-colors shadow-xs shrink-0"
-                >
-                  {copiedSql ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-white" />
-                      <span>Copied SQL!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5 text-white" />
-                      <span>Copy Fix SQL</span>
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={loadEnquiries}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:bg-forest text-ivory text-xs font-bold transition-colors shadow-xs shrink-0"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${loadingData ? 'animate-spin' : ''}`} />
-                  <span>Refresh Cloud</span>
-                </button>
-              </div>
+        {/* Unsynced local records alert */}
+        {localCount > 0 && (
+          <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                <strong>{localCount} local record{localCount > 1 ? 's' : ''}</strong> on this device pending synchronization to Supabase cloud.
+              </span>
             </div>
-            
-            <p className="text-xs text-amber-900/90 leading-relaxed">
-              Your enquiries are in Supabase, but PostgreSQL <strong>Row Level Security (RLS)</strong> blocks reading them via the API by default. Run this 1-line command in your <strong>Supabase SQL Editor</strong> to display all enquiries in this admin page:
-            </p>
-
-            <div className="p-3 rounded-xl bg-slate-900 text-amber-300 font-mono text-xs flex items-center justify-between overflow-x-auto">
-              <code>ALTER TABLE public.admission_enquiries DISABLE ROW LEVEL SECURITY;</code>
-              <button 
-                type="button" 
-                onClick={copySql}
-                className="text-[11px] text-amber-400 hover:text-white uppercase font-bold tracking-wider ml-4"
-              >
-                {copiedSql ? 'Copied' : 'Copy'}
-              </button>
-            </div>
-
-            <div className="text-[11px] text-amber-800/80 pt-1">
-              <span>Quick Steps: Go to <strong>Supabase Dashboard</strong> &rarr; <strong>SQL Editor</strong> &rarr; Paste &amp; click <strong>Run</strong> &rarr; Click <strong>Refresh Cloud</strong> above!</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => loadEnquiries(false)}
+              className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs transition-colors shrink-0"
+            >
+              Sync to Cloud Now
+            </button>
           </div>
         )}
 
@@ -632,13 +627,14 @@ export default function AdminPage() {
               <h3 className="font-serif font-bold text-primary text-base">
                 Admission Enquiries Log ({filteredEnquiries.length})
               </h3>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
-                Cloud: {supabaseCount} • Local Cache: {localCount}
+              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Cloud: {supabaseCount} {localCount > 0 ? `• Local Pending: ${localCount}` : '• Live Synchronized'}</span>
               </span>
             </div>
             <span className="text-xs text-charcoal-muted flex items-center gap-1.5">
               <Database className="w-3.5 h-3.5 text-primary" />
-              <span>Real-time Hybrid Sync</span>
+              <span>Real-time Multi-Device Sync</span>
             </span>
           </div>
 

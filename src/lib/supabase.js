@@ -1,14 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 
-const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const cleanUrl = rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
-const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+// Default Supabase configuration for multi-device cloud synchronization
+// Safe for client frontend: Supabase anon key is a public key guarded by PostgreSQL Row Level Security (RLS)
+const DEFAULT_SUPABASE_URL = 'https://yipmhiqoxtyzafvuzuzg.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcG1oaXFveHR5emFmdnV6dXpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwOTk5NzIsImV4cCI6MjExMDY3NTk3Mn0.i09Gzp7IM_qIXYwMy_TlMuHh4EUEKpdkOO7z1AEBbfM';
+
+const rawUrl = (import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim();
+const cleanUrl = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY).trim();
 
 export const isSupabaseConfigured = Boolean(
   cleanUrl &&
   supabaseAnonKey &&
-  cleanUrl.trim() !== '' &&
-  supabaseAnonKey.trim() !== '' &&
+  cleanUrl !== '' &&
+  supabaseAnonKey !== '' &&
   !cleanUrl.includes('your-project-id')
 );
 
@@ -26,15 +31,131 @@ const MASTER_ADMIN_USERNAME = (import.meta.env.VITE_ADMIN_USERNAME || 'Hikhma@ad
 const MASTER_ADMIN_PASSWORD = (import.meta.env.VITE_ADMIN_PASSWORD || 'Hikhma@NextGen05').trim();
 
 /**
+ * Normalizes an enquiry record from either Supabase or local storage into a consistent schema
+ */
+export function normalizeRecord(r) {
+  if (!r) return null;
+  return {
+    id: r.id || ('enq_' + Math.random().toString(36).slice(2, 9)),
+    student_name: r.student_name || r.studentName || r.student || 'Prospective Student',
+    student_age: r.student_age !== undefined && r.student_age !== null ? r.student_age : (r.studentAge || ''),
+    parent_name: r.parent_name || r.parentName || r.parent || 'Parent / Guardian',
+    email: (r.email || '').toLowerCase().trim(),
+    phone: r.phone || r.contact || r.mobile || '',
+    country: r.country || '',
+    preferred_language: r.preferred_language || r.preferredLanguage || r.language || 'English',
+    fiqh_preference: r.fiqh_preference || r.fiqhPreference || r.fiqh || 'Not Sure',
+    interested_courses: Array.isArray(r.interested_courses) 
+      ? r.interested_courses 
+      : (Array.isArray(r.interestedCourses) 
+          ? r.interestedCourses 
+          : (typeof r.interested_courses === 'string' ? r.interested_courses.split(',').map(s => s.trim()) : (typeof r.interestedCourses === 'string' ? r.interestedCourses.split(',').map(s => s.trim()) : []))),
+    preferred_timing: r.preferred_timing || r.preferredTiming || r.timing || '',
+    additional_message: r.additional_message || r.additionalMessage || r.message || '',
+    consent: r.consent !== undefined ? r.consent : true,
+    status: (r.status || 'new').toLowerCase(),
+    created_at: r.created_at || r.createdAt || r.created_date || new Date().toISOString()
+  };
+}
+
+/**
+ * Automatically syncs any offline/device-local enquiries to Supabase cloud.
+ * This rescues any enquiries previously entered on a specific device and makes them visible everywhere.
+ */
+export async function syncPendingLocalEnquiries() {
+  if (!supabase) return { synced: 0 };
+
+  try {
+    const rawLocal = localStorage.getItem('hikhma_admissions_local');
+    if (!rawLocal) return { synced: 0 };
+
+    const localList = JSON.parse(rawLocal);
+    if (!Array.isArray(localList) || localList.length === 0) return { synced: 0 };
+
+    // Fetch existing records from Supabase to prevent duplicates
+    const { data: cloudRecords, error: fetchErr } = await supabase
+      .from('admission_enquiries')
+      .select('id, email, student_name');
+
+    if (fetchErr) {
+      console.warn('Could not query Supabase cloud for sync verification:', fetchErr);
+      return { synced: 0 };
+    }
+
+    const cloudKeySet = new Set(
+      (cloudRecords || []).map(r => `${(r.email || '').toLowerCase()}-${(r.student_name || '').toLowerCase()}`)
+    );
+    const cloudIdSet = new Set((cloudRecords || []).map(r => r.id));
+
+    let syncedCount = 0;
+    const remainingLocal = [];
+
+    for (const item of localList) {
+      const normalized = normalizeRecord(item);
+      const matchKey = `${normalized.email}-${normalized.student_name.toLowerCase()}`;
+
+      // Check if already in cloud
+      if (cloudIdSet.has(item.id) || cloudKeySet.has(matchKey)) {
+        continue;
+      }
+
+      // Unsynced local enquiry: upload to cloud
+      try {
+        const { data: inserted, error: insertErr } = await supabase
+          .from('admission_enquiries')
+          .insert([
+            {
+              parent_name: normalized.parent_name,
+              email: normalized.email,
+              phone: normalized.phone,
+              country: normalized.country,
+              student_name: normalized.student_name,
+              student_age: parseInt(normalized.student_age, 10) || 7,
+              preferred_language: normalized.preferred_language,
+              fiqh_preference: normalized.fiqh_preference,
+              interested_courses: normalized.interested_courses,
+              preferred_timing: normalized.preferred_timing,
+              additional_message: normalized.additional_message || null,
+              consent: normalized.consent,
+              status: normalized.status || 'new'
+            }
+          ])
+          .select();
+
+        if (!insertErr && inserted && inserted.length > 0) {
+          syncedCount++;
+          cloudKeySet.add(matchKey);
+          cloudIdSet.add(inserted[0].id);
+        } else {
+          console.warn('Could not sync local record to cloud:', insertErr);
+          remainingLocal.push(item);
+        }
+      } catch (err) {
+        console.warn('Network exception while syncing local record:', err);
+        remainingLocal.push(item);
+      }
+    }
+
+    // Retain only genuinely unsynced items in localStorage
+    if (remainingLocal.length > 0) {
+      localStorage.setItem('hikhma_admissions_local', JSON.stringify(remainingLocal));
+    } else {
+      localStorage.removeItem('hikhma_admissions_local');
+    }
+
+    return { synced: syncedCount };
+  } catch (err) {
+    console.error('Error in syncPendingLocalEnquiries:', err);
+    return { synced: 0 };
+  }
+}
+
+/**
  * Submit an admission enquiry to the Supabase database.
- * Also persists locally to ensure immediate visibility in Admin Panel.
- * Returns { success: boolean, data?: any, error?: string }
+ * Directly uploads to Supabase cloud so all devices see the data immediately.
  */
 export async function submitAdmissionEnquiry(payload) {
-  const newId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'enq_' + Date.now();
-  
-  const record = {
-    id: newId,
+  const preparedData = {
     parent_name: payload.parentName.trim(),
     email: payload.email.trim().toLowerCase(),
     phone: payload.phone.trim(),
@@ -47,70 +168,64 @@ export async function submitAdmissionEnquiry(payload) {
     preferred_timing: payload.preferredTiming,
     additional_message: payload.additionalMessage ? payload.additionalMessage.trim() : null,
     consent: payload.consent,
-    status: 'new',
-    created_at: new Date().toISOString()
+    status: 'new'
   };
 
-  // 1. Immediately cache in localStorage for instant admin dashboard reflection
+  // 1. Submit directly to Supabase cloud
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('admission_enquiries')
+        .insert([preparedData])
+        .select();
+
+      if (!error && data && data.length > 0) {
+        const savedRecord = normalizeRecord(data[0]);
+
+        // Keep local cache cleanly updated
+        try {
+          const existing = JSON.parse(localStorage.getItem('hikhma_admissions_local') || '[]');
+          const filtered = existing.filter(
+            e => e.id !== savedRecord.id && 
+            !((e.email || '').toLowerCase() === savedRecord.email && (e.student_name || '').toLowerCase() === savedRecord.student_name.toLowerCase())
+          );
+          localStorage.setItem('hikhma_admissions_local', JSON.stringify([savedRecord, ...filtered]));
+        } catch (e) {}
+
+        return {
+          success: true,
+          data: savedRecord,
+          cloudSaved: true
+        };
+      } else if (error) {
+        console.error('Supabase insertion error:', error);
+      }
+    } catch (err) {
+      console.error('Network exception during Supabase submission:', err);
+    }
+  }
+
+  // 2. Offline / local fallback
+  const fallbackRecord = {
+    ...preparedData,
+    id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'enq_' + Date.now(),
+    created_at: new Date().toISOString(),
+    _pendingSync: true
+  };
+
   try {
     const existing = JSON.parse(localStorage.getItem('hikhma_admissions_local') || '[]');
-    localStorage.setItem('hikhma_admissions_local', JSON.stringify([record, ...existing]));
+    localStorage.setItem('hikhma_admissions_local', JSON.stringify([fallbackRecord, ...existing]));
   } catch (err) {
     console.warn('Local storage cache warning:', err);
   }
 
-  // 2. Submit to Supabase if configured
-  if (!isSupabaseConfigured || !supabase) {
-    return {
-      success: true,
-      warning: 'Stored locally. Supabase connection is pending.',
-      data: record
-    };
-  }
-
-  try {
-    const { error } = await supabase
-      .from('admission_enquiries')
-      .insert([
-        {
-          parent_name: record.parent_name,
-          email: record.email,
-          phone: record.phone,
-          country: record.country,
-          student_name: record.student_name,
-          student_age: record.student_age,
-          preferred_language: record.preferred_language,
-          fiqh_preference: record.fiqh_preference,
-          interested_courses: record.interested_courses,
-          preferred_timing: record.preferred_timing,
-          additional_message: record.additional_message,
-          consent: record.consent,
-          status: 'new'
-        }
-      ]);
-
-    if (error) {
-      console.error('Supabase insertion error:', error);
-      // Even if Supabase throws an error (e.g. temporary network / RLS), we saved it locally!
-      return {
-        success: true,
-        warning: 'Saved locally. Supabase sync notice: ' + error.message,
-        data: record
-      };
-    }
-
-    return {
-      success: true,
-      data: record
-    };
-  } catch (err) {
-    console.error('Unexpected error while submitting enquiry:', err);
-    return {
-      success: true,
-      warning: 'Saved locally. Supabase network notice: ' + err.message,
-      data: record
-    };
-  }
+  return {
+    success: true,
+    warning: 'Saved locally on this device. Will sync to cloud automatically when online.',
+    data: fallbackRecord,
+    cloudSaved: false
+  };
 }
 
 /**
@@ -194,76 +309,38 @@ export async function getAdminSession() {
   return session;
 }
 
-export function normalizeRecord(r) {
-  if (!r) return null;
-  return {
-    id: r.id || r._id || ('enq_' + Math.random().toString(36).slice(2, 9)),
-    student_name: r.student_name || r.studentName || r.student || 'Prospective Student',
-    student_age: r.student_age || r.studentAge || r.age || '',
-    parent_name: r.parent_name || r.parentName || r.parent || 'Parent / Guardian',
-    email: r.email || '',
-    phone: r.phone || r.contact || r.mobile || '',
-    country: r.country || '',
-    preferred_language: r.preferred_language || r.preferredLanguage || r.language || 'English',
-    fiqh_preference: r.fiqh_preference || r.fiqhPreference || r.fiqh || 'Not Sure',
-    interested_courses: Array.isArray(r.interested_courses) 
-      ? r.interested_courses 
-      : (Array.isArray(r.interestedCourses) 
-          ? r.interestedCourses 
-          : (typeof r.interested_courses === 'string' ? r.interested_courses.split(',').map(s => s.trim()) : (typeof r.interestedCourses === 'string' ? r.interestedCourses.split(',').map(s => s.trim()) : []))),
-    preferred_timing: r.preferred_timing || r.preferredTiming || r.timing || '',
-    additional_message: r.additional_message || r.additionalMessage || r.message || '',
-    consent: r.consent !== undefined ? r.consent : true,
-    status: (r.status || 'new').toLowerCase(),
-    created_at: r.created_at || r.createdAt || r.created_date || new Date().toISOString()
-  };
-}
-
+/**
+ * Fetch admission enquiries from Supabase cloud database.
+ * Syncs any pending local enquiries first, then retrieves all records from cloud.
+ */
 export async function fetchAdmissionEnquiries() {
+  // 1. Sync any local enquiries from this device to cloud
+  await syncPendingLocalEnquiries();
+
   let supabaseData = [];
   let supabaseError = null;
-  let activeTableName = 'admission_enquiries';
 
-  // 1. Fetch from Supabase
+  // 2. Query cloud database (authoritative source of truth across all devices)
   if (supabase) {
-    const candidateTables = ['admission_enquiries', 'enquiries', 'admissions', 'admission_forms'];
+    try {
+      const res = await supabase
+        .from('admission_enquiries')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    for (const tableName of candidateTables) {
-      try {
-        let res = await supabase
-          .from(tableName)
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        // If error mentions created_at column missing, retry without ordering
-        if (res.error && res.error.message && res.error.message.includes('created_at')) {
-          res = await supabase.from(tableName).select('*');
-        }
-
-        if (!res.error && res.data) {
-          const rows = res.data.map(normalizeRecord).filter(Boolean);
-          activeTableName = tableName;
-          supabaseData = rows;
-          supabaseError = null;
-          // If we got rows, stop candidate loop
-          if (rows.length > 0) {
-            break;
-          }
-        } else if (res.error) {
-          // If the primary table returned an error, capture it
-          if (tableName === 'admission_enquiries') {
-            supabaseError = res.error.message || JSON.stringify(res.error);
-          }
-        }
-      } catch (err) {
-        if (tableName === 'admission_enquiries') {
-          supabaseError = err.message;
-        }
+      if (!res.error && res.data) {
+        supabaseData = res.data.map(normalizeRecord).filter(Boolean);
+      } else if (res.error) {
+        supabaseError = res.error.message || JSON.stringify(res.error);
+        console.error('Error querying admission_enquiries:', res.error);
       }
+    } catch (err) {
+      supabaseError = err.message;
+      console.error('Network error querying admission_enquiries:', err);
     }
   }
 
-  // 2. Fetch from Local Storage Cache
+  // 3. Check for any pending local records that haven't synced yet
   let localData = [];
   try {
     const rawLocal = JSON.parse(localStorage.getItem('hikhma_admissions_local') || '[]');
@@ -272,18 +349,21 @@ export async function fetchAdmissionEnquiries() {
     localData = [];
   }
 
-  // 3. Merge and deduplicate by ID, or by (email + student_name)
+  // 4. Merge: Supabase cloud records are authoritative
   const combinedMap = new Map();
-  // Add Supabase records first (source of truth from cloud)
+  const seenSignatures = new Set();
+
   supabaseData.forEach(item => {
-    const key = item.id || `${item.email}-${item.student_name}`;
-    combinedMap.set(key, item);
+    combinedMap.set(item.id, item);
+    seenSignatures.add(`${item.email}-${item.student_name.toLowerCase()}`);
   });
-  // Add local records if not already in map
+
+  // Only append local records if not present in cloud
   localData.forEach(item => {
-    const key = item.id || `${item.email}-${item.student_name}`;
-    if (!combinedMap.has(key)) {
-      combinedMap.set(key, item);
+    const sig = `${item.email}-${item.student_name.toLowerCase()}`;
+    if (!combinedMap.has(item.id) && !seenSignatures.has(sig)) {
+      combinedMap.set(item.id, item);
+      seenSignatures.add(sig);
     }
   });
 
@@ -297,72 +377,59 @@ export async function fetchAdmissionEnquiries() {
     supabaseCount: supabaseData.length,
     localCount: localData.length,
     supabaseError,
-    activeTableName,
-    // When Supabase is configured and connected, but returned 0 rows, it's typically blocked by RLS policies
-    isRlsRestricted: Boolean(isSupabaseConfigured && supabaseData.length === 0 && !supabaseError)
+    activeTableName: 'admission_enquiries',
+    isRlsRestricted: false
   };
 }
 
 export async function updateEnquiryStatus(id, newStatus) {
-  // 1. Update local storage first
+  // 1. Optimistic local update
   try {
     const local = JSON.parse(localStorage.getItem('hikhma_admissions_local') || '[]');
     const updated = local.map(item => item.id === id ? { ...item, status: newStatus } : item);
     localStorage.setItem('hikhma_admissions_local', JSON.stringify(updated));
-  } catch (e) {
-    // Ignore local update errors
-  }
+  } catch (e) {}
 
-  // 2. Update Supabase if connected
+  // 2. Update Supabase cloud
   if (!supabase) return { success: true };
 
-  const candidateTables = ['admission_enquiries', 'enquiries', 'admissions', 'admission_forms'];
-  for (const table of candidateTables) {
-    try {
-      const { data, error } = await supabase
-        .from(table)
-        .update({ status: newStatus })
-        .eq('id', id);
+  try {
+    const { data, error } = await supabase
+      .from('admission_enquiries')
+      .update({ status: newStatus })
+      .eq('id', id)
+      .select();
 
-      if (!error) {
-        return { success: true, data: data?.[0] };
-      }
-    } catch (err) {
-      // try next
+    if (!error) {
+      return { success: true, data: data?.[0] };
+    } else {
+      console.error('Supabase update status error:', error);
+      return { success: false, error: error.message };
     }
+  } catch (err) {
+    console.error('Network error during status update:', err);
+    return { success: false, error: err.message };
   }
-
-  return { success: true };
 }
 
 /**
- * Helper to generate a demo enquiry for testing the admin dashboard
+ * Helper to generate a demo enquiry for testing the admin dashboard across devices
  */
-export function createSampleAdmissionEnquiry() {
-  const sample = {
-    id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'sample_' + Date.now(),
-    parent_name: 'Zayd Al-Mansoor',
-    email: 'zayd.mansoor@example.com',
+export async function createSampleAdmissionEnquiry() {
+  const samplePayload = {
+    parentName: 'Zayd Al-Mansoor',
+    email: `zayd.mansoor.${Date.now().toString().slice(-4)}@example.com`,
     phone: '+44 7911 123456',
     country: 'United Kingdom',
-    student_name: 'Bilal Al-Mansoor',
-    student_age: 10,
-    preferred_language: 'English',
-    fiqh_preference: "Shafi'i",
-    interested_courses: ['Quran / Nazira', 'Tajweed', 'Islamic Studies'],
-    preferred_timing: 'Evening (After School)',
-    additional_message: 'Completed Noorani Qaida previously. Looking for 1-on-1 Tajweed and basic Fiqh.',
-    consent: true,
-    status: 'new',
-    created_at: new Date().toISOString()
+    studentName: 'Bilal Al-Mansoor',
+    studentAge: 10,
+    preferredLanguage: 'English',
+    fiqhPreference: "Shafi'i",
+    interestedCourses: ['Quran / Nazira', 'Tajweed', 'Islamic Studies'],
+    preferredTiming: 'Evening (After School)',
+    additionalMessage: 'Completed Noorani Qaida previously. Looking for 1-on-1 Tajweed and basic Fiqh.',
+    consent: true
   };
 
-  try {
-    const existing = JSON.parse(localStorage.getItem('hikhma_admissions_local') || '[]');
-    localStorage.setItem('hikhma_admissions_local', JSON.stringify([sample, ...existing]));
-  } catch (e) {
-    console.warn(e);
-  }
-
-  return sample;
+  return await submitAdmissionEnquiry(samplePayload);
 }

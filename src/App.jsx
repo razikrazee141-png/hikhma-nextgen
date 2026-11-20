@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -12,6 +12,7 @@ import VisionStatement from './components/VisionStatement';
 import AdmissionForm from './components/AdmissionForm';
 import Footer from './components/Footer';
 import AdminPage from './pages/AdminPage';
+import { syncPendingLocalEnquiries } from './lib/supabase';
 
 // Public Institutional Website Component
 function PublicWebsite() {
@@ -57,6 +58,11 @@ function PublicWebsite() {
 }
 
 export default function App() {
+  useEffect(() => {
+    // Sync any pending enquiries from previous offline/disconnected submissions on this device
+    syncPendingLocalEnquiries();
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
