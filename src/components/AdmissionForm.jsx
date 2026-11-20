@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, 
   AlertCircle, 
@@ -15,7 +15,11 @@ import {
   RotateCcw, 
   FileCheck2, 
   Lock,
-  Sparkles
+  Sparkles,
+  Calendar,
+  Award,
+  ChevronRight,
+  Printer
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { submitAdmissionEnquiry, isSupabaseConfigured } from '../lib/supabase';
@@ -42,9 +46,9 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const TIMING_OPTIONS = [
-  'Morning (Before School)',
+  'Morning (Before Secular School)',
   'Afternoon',
-  'Evening (After School)',
+  'Evening (After Secular School)',
   'Night',
   'Weekend Intensive',
   'Flexible / Any Available Slot'
@@ -79,7 +83,7 @@ const INITIAL_FORM_STATE = {
   preferredLanguage: 'English',
   fiqhPreference: 'Not Sure',
   interestedCourses: ['Quran / Nazira', 'Tajweed'],
-  preferredTiming: 'Evening (After School)',
+  preferredTiming: 'Evening (After Secular School)',
   additionalMessage: '',
   consent: false
 };
@@ -91,6 +95,7 @@ export default function AdmissionForm() {
   const [submissionStatus, setSubmissionStatus] = useState(null); // 'success' | 'error' | null
   const [errorMessage, setErrorMessage] = useState('');
   const [submittedData, setSubmittedData] = useState(null);
+  const [referenceId, setReferenceId] = useState('');
 
   const validate = () => {
     const errs = {};
@@ -193,6 +198,8 @@ export default function AdmissionForm() {
     setIsSubmitting(false);
 
     if (result.success) {
+      const genRefId = 'HIK-' + Math.floor(100000 + Math.random() * 900000);
+      setReferenceId(genRefId);
       setSubmissionStatus('success');
       setSubmittedData({ ...formData });
       setFormData(INITIAL_FORM_STATE);
@@ -200,7 +207,7 @@ export default function AdmissionForm() {
 
       try {
         confetti({
-          particleCount: 90,
+          particleCount: 100,
           spread: 80,
           origin: { y: 0.6 },
           colors: ['#C69B48', '#064E3B', '#FAF7EF', '#FFFFFF']
@@ -218,27 +225,54 @@ export default function AdmissionForm() {
     setSubmissionStatus(null);
     setErrorMessage('');
     setSubmittedData(null);
+    setReferenceId('');
     setFormData(INITIAL_FORM_STATE);
     setErrors({});
   };
 
   return (
-    <section id="enquiry" className="py-20 lg:py-28 bg-ivory relative">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="enquiry" className="py-20 lg:py-28 bg-ivory bg-islamic-pattern relative overflow-hidden">
+      
+      {/* Decorative Orbs */}
+      <div className="absolute top-1/3 left-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-gold/40 text-primary text-[10px] font-bold uppercase tracking-widest mb-3">
-            <FileCheck2 className="w-3.5 h-3.5 text-gold" />
-            <span>Online Admissions</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-primary mb-3 tracking-tight">
-            Admission Enquiry Form
-          </h2>
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-gold/40 text-primary text-[10px] font-bold uppercase tracking-widest mb-3 shadow-xs"
+          >
+            <FileCheck2 className="w-3.5 h-3.5 text-gold-700" />
+            <span>Admissions Portal 2026/2027</span>
+          </motion.div>
+
+          <motion.h2 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-3xl sm:text-4xl font-serif font-bold text-primary mb-3 tracking-tight"
+          >
+            Official Admission Enquiry
+          </motion.h2>
+
           <div className="w-16 h-1 bg-gradient-to-r from-gold to-primary mx-auto rounded-full mb-4"></div>
-          <p className="text-base text-charcoal-muted max-w-xl mx-auto font-normal">
-            Take the first step towards personalized, authentic Islamic education for your child. Complete this form to connect with our admissions office.
-          </p>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-base text-charcoal-muted max-w-xl mx-auto font-normal"
+          >
+            Take the first step towards personalized, authentic Islamic education for your child. Complete this institutional form to connect directly with NextGen admissions staff.
+          </motion.p>
         </div>
 
         {/* Success Confirmation State */}
@@ -246,24 +280,36 @@ export default function AdmissionForm() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-3xl bg-white border-2 border-primary/20 p-8 sm:p-12 shadow-2xl text-center"
+            transition={{ duration: 0.4 }}
+            className="rounded-3xl bg-white border-2 border-gold/50 p-8 sm:p-12 shadow-2xl text-center relative overflow-hidden"
           >
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-primary flex items-center justify-center mx-auto mb-4 border border-emerald-300">
+            {/* Top decorative stripe */}
+            <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-gold via-primary to-gold"></div>
+
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-primary flex items-center justify-center mx-auto mb-4 border-2 border-emerald-300 shadow-md">
               <Check className="w-8 h-8 stroke-[3]" />
             </div>
 
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gold-700 block mb-1">
-              Admission Enquiry Received
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-gold-700 block mb-1">
+              Admission Enquiry Formally Logged
             </span>
-            <h3 className="text-2xl sm:text-3xl font-serif font-bold text-primary mb-3">
-              JazakAllahu Khairan!
+
+            <h3 className="text-2xl sm:text-3xl font-serif font-bold text-primary mb-1">
+              Alhamdulillah! JazakAllahu Khairan
             </h3>
+
+            {referenceId && (
+              <div className="inline-block px-3 py-1 rounded-full bg-ivory border border-gold/40 text-xs font-mono font-bold text-primary mb-4">
+                Reference ID: <span className="text-gold-800">{referenceId}</span>
+              </div>
+            )}
+
             <p className="text-charcoal-muted max-w-lg mx-auto text-sm sm:text-base leading-relaxed mb-6">
-              Thank you for trusting Hikhma Islamic School. Your admission enquiry has been successfully received by <strong>NextGen Organisation</strong>.
+              Thank you for choosing Hikhma Islamic School. Your admission enquiry has been successfully logged under <strong>NextGen Organisation</strong> governance.
             </p>
 
             {submittedData && (
-              <div className="max-w-md mx-auto p-5 rounded-2xl bg-ivory border border-charcoal-border text-left text-xs sm:text-sm space-y-2.5 mb-6">
+              <div className="max-w-md mx-auto p-5 rounded-2xl bg-ivory border border-gold/30 text-left text-xs sm:text-sm space-y-2.5 mb-6 shadow-xs">
                 <div className="flex justify-between border-b border-charcoal-border/60 pb-1.5 text-charcoal-muted">
                   <span>Student Name:</span>
                   <span className="font-bold text-charcoal">{submittedData.studentName} (Age: {submittedData.studentAge})</span>
@@ -287,16 +333,16 @@ export default function AdmissionForm() {
               </div>
             )}
 
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/15 max-w-lg mx-auto text-xs text-primary mb-6">
-              <strong>Next Steps:</strong> An academic admissions coordinator from <strong>NextGen Organisation</strong> will reach out via WhatsApp / Email within 24 hours to schedule an introductory evaluation.
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 max-w-lg mx-auto text-xs text-primary mb-6">
+              <strong>Next Steps:</strong> An academic admissions coordinator from <strong>NextGen Organisation</strong> will contact you via WhatsApp / Email within 24 hours to schedule your child's introductory diagnostic session.
             </div>
 
             <button
               type="button"
               onClick={handleReset}
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-primary hover:bg-forest text-ivory text-xs font-bold uppercase tracking-wider transition-colors shadow-sm border border-gold/40"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-primary hover:bg-forest text-ivory text-xs font-bold uppercase tracking-wider transition-colors shadow-sm border border-gold/40 cursor-pointer"
             >
-              <RotateCcw className="w-4 h-4 text-gold" />
+              <RotateCcw className="w-4 h-4 text-gold-400" />
               <span>Submit Another Admission Enquiry</span>
             </button>
           </motion.div>
@@ -310,17 +356,17 @@ export default function AdmissionForm() {
             viewport={{ once: true }}
             onSubmit={handleSubmit}
             noValidate
-            className="rounded-3xl bg-forest-dark border-2 border-gold/40 p-6 sm:p-10 lg:p-12 shadow-2xl text-white relative overflow-hidden"
+            className="rounded-3xl bg-[#072821] border-2 border-gold/50 p-6 sm:p-10 lg:p-12 shadow-2xl text-white relative overflow-hidden"
           >
-            {/* Subtle Top Ambient Gold Line */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold/30 via-gold to-gold/30"></div>
+            {/* Top Ambient Gold Line */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-gold/30 via-gold to-gold/30"></div>
 
             {/* Top Identity Header inside Form */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 mb-8 border-b border-emerald-800/80 gap-4">
               <Logo variant="light" size="default" />
-              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-200">
-                <Lock className="w-3.5 h-3.5 text-gold" />
-                <span>Student Privacy &amp; Data Protection</span>
+              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-200 bg-emerald-950/80 px-3 py-1.5 rounded-xl border border-emerald-800">
+                <Lock className="w-3.5 h-3.5 text-gold-400" />
+                <span>NextGen Encrypted &amp; Confidential</span>
               </div>
             </div>
 
@@ -416,7 +462,7 @@ export default function AdmissionForm() {
                       value={formData.country}
                       onChange={handleChange}
                       disabled={isSubmitting}
-                      className="w-full px-4 py-3 rounded-xl border border-emerald-700/80 bg-emerald-950/70 text-sm text-white focus:border-gold focus:ring-2 focus:ring-gold"
+                      className="w-full px-4 py-3 rounded-xl border border-emerald-700/80 bg-emerald-950/70 text-sm text-white focus:border-gold focus:ring-2 focus:ring-gold cursor-pointer"
                     >
                       {COMMON_COUNTRIES.map(c => (
                         <option key={c} value={c} className="bg-emerald-950 text-white">{c}</option>
@@ -487,7 +533,7 @@ export default function AdmissionForm() {
                       value={formData.preferredLanguage}
                       onChange={handleChange}
                       disabled={isSubmitting}
-                      className="w-full px-4 py-3 rounded-xl border border-emerald-700/80 bg-emerald-950/70 text-sm text-white focus:border-gold focus:ring-2 focus:ring-gold"
+                      className="w-full px-4 py-3 rounded-xl border border-emerald-700/80 bg-emerald-950/70 text-sm text-white focus:border-gold focus:ring-2 focus:ring-gold cursor-pointer"
                     >
                       {LANGUAGE_OPTIONS.map(lang => (
                         <option key={lang} value={lang} className="bg-emerald-950 text-white">{lang}</option>
@@ -508,7 +554,7 @@ export default function AdmissionForm() {
                             setFormData(prev => ({ ...prev, fiqhPreference: fiqh }));
                             if (errors.fiqhPreference) setErrors(prev => ({ ...prev, fiqhPreference: null }));
                           }}
-                          className={`py-2.5 px-2 text-xs font-bold rounded-xl border text-center transition-all ${
+                          className={`py-2.5 px-2 text-xs font-bold rounded-xl border text-center transition-all cursor-pointer ${
                             formData.fiqhPreference === fiqh
                               ? 'bg-gold text-primary border-gold shadow-md'
                               : 'bg-emerald-950/70 text-emerald-200 border-emerald-700/80 hover:border-gold/50'
@@ -534,7 +580,7 @@ export default function AdmissionForm() {
                           key={course}
                           type="button"
                           onClick={() => toggleCourse(course)}
-                          className={`p-3 rounded-xl border text-xs font-semibold text-left flex items-center justify-between transition-all ${
+                          className={`p-3 rounded-xl border text-xs font-semibold text-left flex items-center justify-between transition-all cursor-pointer ${
                             isSelected
                               ? 'bg-emerald-800 text-white border-gold shadow-sm'
                               : 'bg-emerald-950/70 text-emerald-200 border-emerald-700/80 hover:border-gold/40'
@@ -575,7 +621,7 @@ export default function AdmissionForm() {
                       value={formData.preferredTiming}
                       onChange={handleChange}
                       disabled={isSubmitting}
-                      className="w-full px-4 py-3 rounded-xl border border-emerald-700/80 bg-emerald-950/70 text-sm text-white focus:border-gold focus:ring-2 focus:ring-gold"
+                      className="w-full px-4 py-3 rounded-xl border border-emerald-700/80 bg-emerald-950/70 text-sm text-white focus:border-gold focus:ring-2 focus:ring-gold cursor-pointer"
                     >
                       {TIMING_OPTIONS.map(t => (
                         <option key={t} value={t} className="bg-emerald-950 text-white">{t}</option>
@@ -585,7 +631,7 @@ export default function AdmissionForm() {
 
                   <div>
                     <label className="block text-[11px] font-bold text-gold-200 uppercase tracking-wider mb-2">
-                      Additional Message or Special Learning Requests <span className="text-emerald-400 text-normal">(Optional)</span>
+                      Additional Message or Special Learning Requests <span className="text-emerald-400 font-normal">(Optional)</span>
                     </label>
                     <textarea
                       name="additionalMessage"
@@ -606,7 +652,7 @@ export default function AdmissionForm() {
                         checked={formData.consent}
                         onChange={handleChange}
                         disabled={isSubmitting}
-                        className="mt-1 w-4 h-4 rounded border-emerald-600 bg-emerald-950 text-gold focus:ring-gold"
+                        className="mt-1 w-4 h-4 rounded border-emerald-600 bg-emerald-950 text-gold focus:ring-gold cursor-pointer"
                       />
                       <span className="text-xs text-emerald-100/90 leading-relaxed">
                         I confirm that I am the parent or legal guardian of the student, and I authorize <strong>Hikhma Islamic School / NextGen Organisation</strong> to contact me regarding admission, placement, and class scheduling via WhatsApp, phone, or email. <span className="text-gold-400">*</span>
@@ -626,7 +672,7 @@ export default function AdmissionForm() {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto sm:min-w-[320px] max-w-full flex items-center justify-center gap-3 px-6 sm:px-9 py-4 rounded-xl font-bold uppercase tracking-wider text-xs sm:text-sm text-primary bg-gradient-to-r from-gold-400 via-gold to-gold-400 hover:from-gold hover:to-gold-600 shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed mx-auto border border-gold-300"
+                  className="w-full sm:w-auto sm:min-w-[320px] max-w-full flex items-center justify-center gap-3 px-6 sm:px-9 py-4 rounded-xl font-bold uppercase tracking-wider text-xs sm:text-sm text-primary bg-gradient-to-r from-gold-400 via-gold to-gold-400 hover:from-gold hover:to-gold-600 shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed mx-auto border border-gold-300 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>

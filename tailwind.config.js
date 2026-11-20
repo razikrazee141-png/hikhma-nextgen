@@ -11,6 +11,7 @@ export default {
           DEFAULT: '#064E3B', // Deep Emerald Green
           dark: '#04382A',
           light: '#0D6850',
+          deep: '#03231A',
         },
         forest: {
           DEFAULT: '#0B3D32', // Secondary Forest Green
@@ -65,7 +66,31 @@ export default {
       },
       backgroundImage: {
         'islamic-pattern': "radial-gradient(#C69B48 0.65px, transparent 0.65px), radial-gradient(#C69B48 0.65px, #FAF7EF 0.65px)",
-      }
+      },
+      animation: {
+        'shimmer': 'shimmer 2.5s infinite',
+        'float-slow': 'floatSlow 4s ease-in-out infinite',
+        'float-reverse': 'floatReverse 4.5s ease-in-out infinite',
+        'pulse-subtle': 'pulseSubtle 3s ease-in-out infinite',
+      },
+      keyframes: {
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(200%)' },
+        },
+        floatSlow: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+        floatReverse: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(8px)' },
+        },
+        pulseSubtle: {
+          '0%, 100%': { opacity: '0.8', transform: 'scale(1)' },
+          '50%': { opacity: '1', transform: 'scale(1.04)' },
+        },
+      },
     },
   },
   plugins: [],

@@ -40,6 +40,29 @@
   background-position: 0 0, 16px 16px;
 }
 
+/* Luxury Official Styling */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #C69B48 0%, #F0E2C1 50%, #A97E30 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-border-glow {
+  box-shadow: 0 0 15px -3px rgba(198, 155, 72, 0.25);
+}
+
+.card-official {
+  background: #ffffff;
+  border: 1px solid rgba(198, 155, 72, 0.25);
+  box-shadow: 0 4px 20px -2px rgba(6, 78, 59, 0.05);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-official:hover {
+  border-color: rgba(198, 155, 72, 0.6);
+  box-shadow: 0 12px 30px -4px rgba(6, 78, 59, 0.12), 0 0 12px -2px rgba(198, 155, 72, 0.2);
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

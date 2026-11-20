@@ -1,5 +1,6 @@
 import React from 'react';
-import { Globe, Compass, ShieldCheck, ArrowRight, Award } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Globe, Compass, ShieldCheck, ArrowRight, Award, Landmark, HelpCircle, Star, Sparkles } from 'lucide-react';
 import Logo from './Logo';
 
 export default function Footer() {
@@ -24,8 +25,12 @@ export default function Footer() {
   };
 
   return (
-    <footer id="contact" className="bg-[#03231A] text-emerald-100 relative pt-16 pb-12 border-t-2 border-gold/40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer id="contact" className="bg-[#021B14] text-emerald-100 relative pt-16 pb-12 border-t-2 border-gold/50 overflow-hidden">
+      
+      {/* Decorative Orbs */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-emerald-900/80">
           
@@ -38,14 +43,14 @@ export default function Footer() {
             </p>
 
             <div className="pt-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-900/80 border border-emerald-800 text-xs text-gold-300 font-medium">
-                <ShieldCheck className="w-4 h-4 text-gold-400" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-900/60 border border-emerald-800 text-xs text-gold-300 font-medium">
+                <ShieldCheck className="w-4 h-4 text-gold-400 shrink-0" />
                 <span>Managed and Operated by <strong className="text-white">NextGen Organisation</strong></span>
               </div>
             </div>
           </div>
 
-          {/* Column 2: Quick Links (lg:col-span-3) */}
+          {/* Column 2: Academic Quick Links (lg:col-span-3) */}
           <div className="lg:col-span-3 space-y-3">
             <h4 className="text-xs font-serif font-bold text-white tracking-widest uppercase border-b border-emerald-900 pb-2">
               Academic Navigation
@@ -53,18 +58,21 @@ export default function Footer() {
             <ul className="space-y-2 text-xs text-emerald-200">
               {[
                 { name: 'Home', href: '#home' },
-                { name: 'About Us', href: '#about' },
-                { name: 'Academic Curriculum', href: '#curriculum' },
+                { name: 'About Our Institution', href: '#about' },
+                { name: 'Office of the Managing Director', href: '#leadership' },
+                { name: 'Academic Curriculum Tracks', href: '#curriculum' },
                 { name: 'Learning Methodology', href: '#methodology' },
                 { name: 'Why Choose Hikhma', href: '#why-us' },
-                { name: 'Languages Supported', href: '#languages' },
+                { name: 'Languages of Instruction', href: '#languages' },
+                { name: 'Parent Endorsements', href: '#testimonials' },
+                { name: 'Frequently Asked Questions', href: '#faq' },
                 { name: 'Admission Enquiry', href: '#enquiry' },
               ].map((item) => (
                 <li key={item.name}>
                   <a
                     href={item.href}
                     onClick={(e) => handleScrollTo(e, item.href)}
-                    className="hover:text-gold transition-colors inline-flex items-center gap-1.5"
+                    className="hover:text-gold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                   >
                     <span className="text-gold text-xs">›</span>
                     <span>{item.name}</span>
@@ -74,10 +82,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Admissions Office & Global Reach (lg:col-span-4) */}
+          {/* Column 3: Admissions Office & Governance (lg:col-span-4) */}
           <div className="lg:col-span-4 space-y-3">
             <h4 className="text-xs font-serif font-bold text-white tracking-widest uppercase border-b border-emerald-900 pb-2">
-              Admissions Office
+              Institutional Governance
             </h4>
             
             <p className="text-xs text-emerald-200/80 leading-relaxed">
@@ -102,7 +110,7 @@ export default function Footer() {
               </div>
 
               <div className="flex items-start gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
+                <Landmark className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="text-emerald-400 block text-[10px] uppercase font-bold tracking-wider">Managing Director</span>
                   <span className="text-white font-semibold">Sayyid Fazal Al Bukhari Al Qadiri</span>
@@ -123,7 +131,7 @@ export default function Footer() {
               <a
                 href="#enquiry"
                 onClick={(e) => handleScrollTo(e, '#enquiry')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gold hover:bg-gold-600 text-primary font-bold text-xs uppercase tracking-wider transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gold hover:bg-gold-600 text-primary font-bold text-xs uppercase tracking-wider transition-colors shadow-sm cursor-pointer border border-gold-300"
               >
                 <span>Submit Admission Enquiry</span>
                 <ArrowRight className="w-3.5 h-3.5" />

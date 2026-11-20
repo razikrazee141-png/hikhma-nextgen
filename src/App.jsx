@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ScrollProgress from './components/ScrollProgress';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -8,16 +9,22 @@ import Methodology from './components/Methodology';
 import WhyChooseUs from './components/WhyChooseUs';
 import LanguagesSupported from './components/Languages';
 import FlexibleLearning from './components/FlexibleLearning';
+import Testimonials from './components/Testimonials';
+import FAQ from './components/FAQ';
 import VisionStatement from './components/VisionStatement';
 import AdmissionForm from './components/AdmissionForm';
 import Footer from './components/Footer';
+import FloatingActions from './components/FloatingActions';
 import AdminPage from './pages/AdminPage';
 import { syncPendingLocalEnquiries } from './lib/supabase';
 
 // Public Institutional Website Component
 function PublicWebsite() {
   return (
-    <div className="min-h-screen flex flex-col bg-ivory text-charcoal antialiased selection:bg-primary selection:text-ivory">
+    <div className="min-h-screen flex flex-col bg-ivory text-charcoal antialiased selection:bg-primary selection:text-ivory relative">
+      {/* Global Scroll Progress Bar */}
+      <ScrollProgress />
+
       {/* Navigation */}
       <Navbar />
 
@@ -26,23 +33,31 @@ function PublicWebsite() {
         {/* Hero Section */}
         <Hero />
 
-        {/* About Section */}
+        {/* About Section & Leadership Governance */}
         <About />
 
-        {/* Curriculum Section */}
+        {/* Academic Curriculum Section */}
         <Curriculum />
 
-        {/* Learning Methodology */}
+        {/* Learning Methodology & 4-Step Pathway */}
         <Methodology />
 
-        {/* Why Choose Hikhma? */}
+        {/* Why Choose Hikhma */}
         <WhyChooseUs />
 
         {/* Languages Supported */}
         <LanguagesSupported />
 
-        {/* Flexible Learning */}
+        {/* Flexible Learning Worldwide */}
         <FlexibleLearning />
+
+        {/* Parent & Scholar Endorsements */}
+        <div id="testimonials">
+          <Testimonials />
+        </div>
+
+        {/* Frequently Asked Questions */}
+        <FAQ />
 
         {/* Vision Statement */}
         <VisionStatement />
@@ -50,6 +65,9 @@ function PublicWebsite() {
         {/* Admission Enquiry Form (Core Conversion) */}
         <AdmissionForm />
       </main>
+
+      {/* Floating Action Pill & Back to Top */}
+      <FloatingActions />
 
       {/* Institutional Footer */}
       <Footer />

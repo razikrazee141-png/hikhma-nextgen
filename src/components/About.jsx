@@ -16,7 +16,8 @@ import {
   BookOpen,
   Sparkles,
   CheckCircle2,
-  Quote
+  Quote,
+  Check
 } from 'lucide-react';
 import Logo from './Logo';
 
@@ -67,38 +68,48 @@ export default function About() {
   ];
 
   return (
-    <section id="about" className="py-20 lg:py-28 bg-white relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="about" className="py-20 lg:py-28 bg-white relative overflow-hidden">
+      
+      {/* Decorative Background Accents */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Editorial Two-Column Header with Architecture Imagery */}
+        {/* Editorial Two-Column Header with Photography */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
           
           {/* Left Column: Image with Noorani Qaida Student */}
           <motion.div 
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -25 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.65, ease: "easeOut" }}
             className="lg:col-span-5 relative"
           >
-            <div className="relative rounded-3xl overflow-hidden border-2 border-gold/30 shadow-xl bg-ivory">
-              <img
-                src="/images/noorani-qaida-student.jpg"
-                alt="Young student learning Noorani Qaida and Quranic Arabic at home with Hikhma Islamic School"
-                loading="lazy"
-                className="w-full h-[400px] object-cover object-center filter brightness-[0.98] hover:scale-105 transition-transform duration-700"
-              />
-              
-              {/* Overlay Badge */}
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent flex items-end p-6">
-                <div className="text-white">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/90 text-primary font-bold text-[10px] uppercase tracking-wider mb-2">
-                    <Award className="w-3.5 h-3.5" />
-                    <span>Nurturing From Age 5 to 18</span>
+            <div className="relative rounded-3xl overflow-hidden border-2 border-gold/40 shadow-2xl bg-ivory p-2 group">
+              <div className="relative rounded-2xl overflow-hidden">
+                <img
+                  src="/images/noorani-qaida-student.jpg"
+                  alt="Young student learning Noorani Qaida and Quranic Arabic at home with Hikhma Islamic School"
+                  loading="lazy"
+                  className="w-full h-[420px] object-cover object-center filter brightness-[0.98] group-hover:scale-105 transition-transform duration-700"
+                />
+                
+                {/* Overlay Badge */}
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent flex items-end p-6">
+                  <div className="text-white">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold text-primary font-bold text-[10px] uppercase tracking-wider mb-2 shadow-sm">
+                      <Award className="w-3.5 h-3.5" />
+                      <span>Foundations from Age 5</span>
+                    </div>
+                    <h4 className="font-serif text-lg sm:text-xl text-ivory font-bold leading-tight">
+                      Structured Noorani &amp; Quranic Foundations
+                    </h4>
+                    <p className="text-xs text-gold-200 mt-1">
+                      Individualized pacing for young minds
+                    </p>
                   </div>
-                  <h4 className="font-serif text-lg text-ivory font-bold">
-                    Structured Noorani &amp; Quranic Foundations
-                  </h4>
                 </div>
               </div>
             </div>
@@ -109,15 +120,15 @@ export default function About() {
 
           {/* Right Column: Institutional Statement */}
           <motion.div 
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 25 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.65, ease: "easeOut" }}
             className="lg:col-span-7 space-y-5"
           >
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-ivory border border-gold/40 text-primary text-[10px] font-bold uppercase tracking-widest">
-              <FileText className="w-3.5 h-3.5 text-gold" />
-              <span>About Our School</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-ivory border border-gold/40 text-primary text-[10px] font-bold uppercase tracking-widest shadow-xs">
+              <FileText className="w-3.5 h-3.5 text-gold-700" />
+              <span>About Our Institution</span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-primary tracking-tight">
@@ -127,20 +138,37 @@ export default function About() {
             <div className="w-16 h-1 bg-gradient-to-r from-gold to-primary rounded-full"></div>
 
             {/* Institutional Quote */}
-            <div className="relative p-6 sm:p-7 rounded-2xl bg-ivory border border-gold/30 shadow-xs">
+            <div className="relative p-6 sm:p-7 rounded-2xl bg-ivory border border-gold/40 shadow-xs">
+              <Quote className="w-8 h-8 text-gold-400/40 absolute top-4 right-4 pointer-events-none" />
               <p className="text-base sm:text-lg text-charcoal leading-relaxed font-normal italic">
                 "Hikhma Islamic School, managed and operated by NextGen Organisation, is an inclusive, globally accessible online Islamic educational institution dedicated to nurturing young minds aged 5 to 18 through structured, authentic, and practical Islamic learning."
               </p>
               
-              <div className="mt-4 pt-4 border-t border-gold/20 flex items-center justify-between text-xs text-charcoal-muted">
+              <div className="mt-4 pt-4 border-t border-gold/25 flex items-center justify-between text-xs text-charcoal-muted">
                 <span className="font-bold text-primary">Department of Islamic Education</span>
-                <span className="text-gold-700 font-semibold">NextGen Organisation</span>
+                <span className="text-gold-700 font-bold uppercase tracking-wider text-[11px]">NextGen Organisation</span>
               </div>
             </div>
 
             <p className="text-sm text-charcoal-muted leading-relaxed">
               We bridge traditional orthodox scholarship with the modern convenience of home learning. Every student is paired with a dedicated tutor who understands their personal learning curve, character, and spiritual needs.
             </p>
+
+            {/* Core Values Strip */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-ivory border border-charcoal-border text-xs font-semibold text-primary">
+                <CheckCircle2 className="w-4 h-4 text-gold-600 shrink-0" />
+                <span>Scholarly Fidelity</span>
+              </div>
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-ivory border border-charcoal-border text-xs font-semibold text-primary">
+                <CheckCircle2 className="w-4 h-4 text-gold-600 shrink-0" />
+                <span>Individualized Pacing</span>
+              </div>
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-ivory border border-charcoal-border text-xs font-semibold text-primary">
+                <CheckCircle2 className="w-4 h-4 text-gold-600 shrink-0" />
+                <span>Moral Character Focus</span>
+              </div>
+            </div>
           </motion.div>
 
         </div>
@@ -150,18 +178,19 @@ export default function About() {
           {institutionalFacts.map((fact, index) => (
             <motion.div
               key={fact.label}
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              className={`p-5 rounded-2xl border transition-all duration-300 hover:shadow-md ${
+              transition={{ duration: 0.45, delay: index * 0.06 }}
+              whileHover={{ y: -4 }}
+              className={`p-5 rounded-2xl border transition-all duration-300 hover:shadow-lg ${
                 index === 0 
-                  ? 'bg-ivory border-gold/40 sm:col-span-2 lg:col-span-1' 
-                  : 'bg-white border-charcoal-border hover:border-gold/50'
+                  ? 'bg-ivory border-gold/50 sm:col-span-2 lg:col-span-1 shadow-xs' 
+                  : 'bg-white border-charcoal-border hover:border-gold/60 shadow-xs'
               }`}
             >
               <div className="flex items-center gap-3 mb-2.5">
-                <div className="p-2.5 rounded-xl bg-ivory-50 border border-gold/20 shadow-xs">
+                <div className="p-2.5 rounded-xl bg-ivory-50 border border-gold/30 shadow-xs">
                   {fact.icon}
                 </div>
                 <div>
@@ -187,29 +216,47 @@ export default function About() {
           
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-ivory border border-gold/40 text-primary text-[10px] font-bold uppercase tracking-widest mb-3">
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-ivory border border-gold/40 text-primary text-[10px] font-bold uppercase tracking-widest mb-3"
+            >
               <Landmark className="w-3.5 h-3.5 text-gold-700" />
               <span>Leadership &amp; Governance</span>
-            </div>
+            </motion.div>
             
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-primary tracking-tight">
+            <motion.h3 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-primary tracking-tight"
+            >
               Office of the Managing Director
-            </h3>
+            </motion.h3>
             
             <div className="w-16 h-1 bg-gradient-to-r from-gold to-primary mx-auto rounded-full mt-3 mb-4"></div>
             
-            <p className="text-sm sm:text-base text-charcoal-muted leading-relaxed">
+            <motion.p 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-sm sm:text-base text-charcoal-muted leading-relaxed"
+            >
               Guiding Hikhma Islamic School with orthodox scholarly fidelity, modern educational governance, and dedicated moral mentorship.
-            </p>
+            </motion.p>
           </div>
 
           {/* Profile Card Container */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 25 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6 }}
-            className="bg-gradient-to-br from-[#FAF7EF] via-white to-ivory-50 rounded-3xl border-2 border-gold/40 shadow-xl overflow-hidden p-6 sm:p-10 lg:p-12 relative"
+            transition={{ duration: 0.65, ease: "easeOut" }}
+            className="bg-gradient-to-br from-[#FAF7EF] via-white to-ivory-50 rounded-3xl border-2 border-gold/50 shadow-2xl overflow-hidden p-6 sm:p-10 lg:p-12 relative"
           >
             {/* Subtle Gold Ambient Glow */}
             <div className="absolute top-0 right-0 w-80 h-80 bg-gold/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -222,17 +269,17 @@ export default function About() {
                   {/* Outer Accent Glow */}
                   <div className="absolute -inset-1.5 bg-gradient-to-tr from-gold-500 via-primary to-gold-400 rounded-3xl opacity-40 blur-sm group-hover:opacity-75 transition-opacity duration-500"></div>
                   
-                  <div className="relative rounded-2xl overflow-hidden border-2 border-gold/60 shadow-2xl bg-forest">
+                  <div className="relative rounded-2xl overflow-hidden border-2 border-gold/70 shadow-2xl bg-forest">
                     <img
                       src="/images/sayyid-fazal-al-bukhari.jpg"
                       alt="Sayyid Fazal Al Bukhari Al Qadiri - Managing Director, NextGen Organisation"
-                      className="w-full h-auto max-h-[460px] object-cover object-top filter brightness-[1.01] hover:scale-105 transition-transform duration-700"
+                      className="w-full h-auto max-h-[460px] object-cover object-top filter brightness-[1.01] group-hover:scale-105 transition-transform duration-700"
                       loading="lazy"
                     />
 
                     {/* Official Identity Overlay */}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary-dark via-primary/90 to-transparent p-4 sm:p-5 text-white">
-                      <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gold/90 text-primary font-bold text-[9px] uppercase tracking-wider mb-1.5">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#042821] via-primary/90 to-transparent p-4 sm:p-5 text-white">
+                      <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gold text-primary font-bold text-[9px] uppercase tracking-wider mb-1.5 shadow-sm">
                         <ShieldCheck className="w-3 h-3" />
                         <span>Managing Director</span>
                       </div>
@@ -287,14 +334,14 @@ export default function About() {
                 </div>
 
                 {/* Vision Quotation Box */}
-                <div className="relative p-5 sm:p-6 rounded-2xl bg-white border border-gold/30 shadow-xs">
+                <div className="relative p-5 sm:p-6 rounded-2xl bg-white border border-gold/40 shadow-xs">
                   <Quote className="w-6 h-6 text-gold-400 mb-2 opacity-60" />
                   <p className="text-sm sm:text-base text-charcoal italic leading-relaxed font-normal">
                     "Our objective through NextGen Organisation and Hikhma Islamic School is to revive authentic, orthodox Islamic learning within modern households. By combining venerable scholarly traditions with high-standard remote educational technology, we provide every young Muslim child with dedicated 1-on-1 mentorship that nurtures both sound knowledge and upright character (Adab)."
                   </p>
-                  <div className="mt-3 pt-3 border-t border-gold/20 flex items-center justify-between text-xs">
+                  <div className="mt-3 pt-3 border-t border-gold/25 flex items-center justify-between text-xs">
                     <span className="font-bold text-primary">Sayyid Fazal Al Bukhari Al Qadiri</span>
-                    <span className="text-gold-700 font-medium">MD NextGen Organisation</span>
+                    <span className="text-gold-700 font-semibold">MD NextGen Organisation</span>
                   </div>
                 </div>
 
@@ -310,19 +357,19 @@ export default function About() {
 
                 {/* 4 Pillars of Leadership Governance */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <div className="p-3.5 rounded-xl bg-white border border-gold/20 shadow-xs flex items-start gap-3">
+                  <div className="p-3.5 rounded-xl bg-white border border-gold/30 shadow-xs flex items-start gap-3 hover:border-gold transition-colors">
                     <div className="p-2 rounded-lg bg-ivory text-primary shrink-0 border border-gold/30">
                       <Compass className="w-4 h-4 text-gold-700" />
                     </div>
                     <div>
                       <h5 className="text-xs font-bold text-primary">Orthodox Authenticity</h5>
                       <p className="text-[11px] text-charcoal-muted leading-snug mt-0.5">
-                        Traditional texts aligned with Shafi'i and Hanafi Madhhab curricula.
+                        Traditional texts aligned strictly with Shafi'i and Hanafi Madhhab curricula.
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-white border border-gold/20 shadow-xs flex items-start gap-3">
+                  <div className="p-3.5 rounded-xl bg-white border border-gold/30 shadow-xs flex items-start gap-3 hover:border-gold transition-colors">
                     <div className="p-2 rounded-lg bg-ivory text-primary shrink-0 border border-gold/30">
                       <GraduationCap className="w-4 h-4 text-primary" />
                     </div>
@@ -334,7 +381,7 @@ export default function About() {
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-white border border-gold/20 shadow-xs flex items-start gap-3">
+                  <div className="p-3.5 rounded-xl bg-white border border-gold/30 shadow-xs flex items-start gap-3 hover:border-gold transition-colors">
                     <div className="p-2 rounded-lg bg-ivory text-primary shrink-0 border border-gold/30">
                       <Languages className="w-4 h-4 text-gold-700" />
                     </div>
@@ -346,7 +393,7 @@ export default function About() {
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-white border border-gold/20 shadow-xs flex items-start gap-3">
+                  <div className="p-3.5 rounded-xl bg-white border border-gold/30 shadow-xs flex items-start gap-3 hover:border-gold transition-colors">
                     <div className="p-2 rounded-lg bg-ivory text-primary shrink-0 border border-gold/30">
                       <Award className="w-4 h-4 text-primary" />
                     </div>
