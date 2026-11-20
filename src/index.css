@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  body {
+    background-color: #FAF7EF;
+    color: #242824;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'Cinzel', Georgia, serif;
+    letter-spacing: -0.015em;
+  }
+}
+
+/* Subtle Islamic Star Lattice Background */
+.bg-islamic-pattern {
+  background-color: #FAF7EF;
+  background-image: 
+    radial-gradient(rgba(198, 155, 72, 0.18) 0.75px, transparent 0.75px), 
+    radial-gradient(rgba(6, 78, 59, 0.12) 0.75px, #FAF7EF 0.75px);
+  background-size: 28px 28px;
+  background-position: 0 0, 14px 14px;
+}
+
+.bg-emerald-pattern {
+  background-color: #064E3B;
+  background-image: 
+    radial-gradient(rgba(198, 155, 72, 0.22) 0.8px, transparent 0.8px), 
+    radial-gradient(rgba(198, 155, 72, 0.12) 0.8px, #064E3B 0.8px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF7EF;
+}
+::-webkit-scrollbar-thumb {
+  background: #064E3B;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C69B48;
+}
+
+/* Selection */
+::selection {
+  background-color: #064E3B;
+  color: #FAF7EF;
+}
