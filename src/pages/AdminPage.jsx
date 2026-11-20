@@ -26,12 +26,15 @@ import {
   ArrowLeft,
   X,
   Eye,
+  EyeOff,
   Sparkles,
   Copy,
   Check,
   PlusCircle,
   AlertTriangle,
-  Database
+  Database,
+  GraduationCap,
+  Languages
 } from 'lucide-react';
 import { 
   signInAdmin, 
@@ -52,6 +55,7 @@ export default function AdminPage() {
   // Login form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -331,6 +335,20 @@ export default function AdminPage() {
             </p>
           </div>
 
+          {/* Managing Director Leadership Attribution */}
+          <div className="mb-6 p-3 rounded-2xl bg-forest/90 border border-gold/30 flex items-center gap-3 text-left shadow-xs">
+            <img
+              src="/images/sayyid-fazal-al-bukhari.jpg"
+              alt="Sayyid Fazal Al Bukhari Al Qadiri"
+              className="w-12 h-12 rounded-xl object-cover object-top border border-gold shrink-0 shadow-xs"
+            />
+            <div>
+              <span className="text-[9px] font-bold uppercase tracking-wider text-gold-300 block">NextGen Leadership</span>
+              <h4 className="text-xs font-serif font-bold text-white">Sayyid Fazal Al Bukhari Al Qadiri</h4>
+              <p className="text-[10px] text-emerald-200">MD NextGen Organisation • M.Com, Dip. Arabic &amp; Urdu</p>
+            </div>
+          </div>
+
           {/* Login Error Alert */}
           {loginError && (
             <div className="mb-6 p-4 rounded-xl bg-red-900/60 border border-red-500 text-red-100 flex items-start gap-2.5 text-xs">
@@ -358,19 +376,59 @@ export default function AdminPage() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-gold-200 uppercase tracking-wider mb-2">
-                Administrator Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-[11px] font-bold text-gold-200 uppercase tracking-wider">
+                  Administrator Password
+                </label>
+                {/* See Password Button (Quick toggle on mobile & desktop) */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="inline-flex items-center gap-1.5 text-xs text-gold-300 hover:text-gold active:text-gold-200 transition-colors py-0.5 px-1.5 rounded focus:outline-none focus:ring-1 focus:ring-gold/50"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <>
+                      <EyeOff className="w-3.5 h-3.5 text-gold" />
+                      <span className="text-[11px] font-semibold">Hide</span>
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-3.5 h-3.5 text-gold" />
+                      <span className="text-[11px] font-semibold">See Password</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   disabled={isLoggingIn}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-emerald-700/80 bg-emerald-950/70 text-sm text-white placeholder:text-emerald-400/50 focus:border-gold focus:ring-2 focus:ring-gold transition-colors"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  className="w-full pl-10 pr-12 py-3 rounded-xl border border-emerald-700/80 bg-emerald-950/70 text-sm text-white placeholder:text-emerald-400/50 focus:border-gold focus:ring-2 focus:ring-gold transition-colors"
                 />
-                <Key className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
+                <Key className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                
+                {/* Right inside-input touch button */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-emerald-400 hover:text-gold active:text-gold focus:outline-none rounded-lg"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4 text-gold" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -437,10 +495,21 @@ export default function AdminPage() {
           </div>
 
           <div className="flex items-center gap-2.5 text-xs">
-            <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-forest border border-emerald-700 text-emerald-200 font-medium">
-              <User className="w-3.5 h-3.5 text-gold" />
-              <span>{session.user?.email || 'Administrator'}</span>
-            </span>
+            <div className="hidden lg:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-forest border border-emerald-700 text-emerald-200 shadow-xs">
+              <img
+                src="/images/sayyid-fazal-al-bukhari.jpg"
+                alt="Sayyid Fazal Al Bukhari Al Qadiri"
+                className="w-7 h-7 rounded-full object-cover object-top border border-gold shrink-0"
+              />
+              <div className="text-left leading-tight">
+                <span className="text-[11px] font-bold text-white block">
+                  Sayyid Fazal Al Bukhari Al Qadiri
+                </span>
+                <span className="text-[9px] text-gold-300 block">
+                  MD NextGen Organisation • M.Com
+                </span>
+              </div>
+            </div>
 
             <button
               type="button"
@@ -477,6 +546,68 @@ export default function AdminPage() {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
+        {/* Administrator Profile & Institutional Governance Banner */}
+        <div className="bg-gradient-to-r from-forest via-primary to-forest rounded-2xl border-2 border-gold/40 shadow-lg text-white p-5 sm:p-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-5">
+            {/* Admin Photo */}
+            <div className="relative shrink-0">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-gold shadow-md bg-emerald-950">
+                <img
+                  src="/images/sayyid-fazal-al-bukhari.jpg"
+                  alt="Sayyid Fazal Al Bukhari Al Qadiri"
+                  className="w-full h-full object-cover object-top"
+                />
+              </div>
+              <div className="absolute -bottom-2 inset-x-0 flex justify-center">
+                <span className="px-2 py-0.5 rounded-full bg-gold text-primary font-bold text-[9px] uppercase tracking-wider shadow-xs">
+                  MD NextGen
+                </span>
+              </div>
+            </div>
+
+            {/* Admin Bio & Details */}
+            <div className="flex-grow text-center md:text-left space-y-1.5">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-800/80 border border-emerald-600 text-gold-300 text-[10px] font-bold uppercase tracking-wider">
+                  Managing Director &amp; Chief Administrator
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-gold/20 border border-gold/40 text-ivory text-[10px] font-medium">
+                  NextGen Organisation
+                </span>
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-serif font-bold text-ivory tracking-wide">
+                Sayyid Fazal Al Bukhari Al Qadiri
+              </h2>
+
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs text-emerald-200">
+                <span className="inline-flex items-center gap-1 font-semibold text-gold-300">
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  M.Com (Master of Commerce)
+                </span>
+                <span>•</span>
+                <span className="inline-flex items-center gap-1 font-semibold text-gold-300">
+                  <Languages className="w-3.5 h-3.5" />
+                  Diploma in Arabic and Urdu
+                </span>
+              </div>
+
+              <p className="text-xs text-emerald-100/90 leading-relaxed max-w-3xl pt-1">
+                Executive governance and institutional leadership of Hikhma Islamic School admissions, teacher placement, and orthodox curriculum adherence (Shafi'i &amp; Hanafi). Dedicated to delivering authentic, individual 1-on-1 Islamic education to young learners globally.
+              </p>
+            </div>
+
+            {/* Quick System Badge */}
+            <div className="shrink-0 hidden xl:flex flex-col items-end justify-center self-center pl-4 border-l border-emerald-800/80 text-right">
+              <span className="text-[10px] text-emerald-300 uppercase tracking-wider font-semibold">Portal Governance</span>
+              <span className="text-xs font-bold text-gold-300">Live Active Management</span>
+              <span className="text-[10px] text-emerald-200/80 mt-1">Hikhma Online Madrasa</span>
+            </div>
+          </div>
+        </div>
+
         {/* KPI Cards Row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           <div className="p-4 rounded-2xl bg-white border border-charcoal-border shadow-xs">

@@ -102,6 +102,15 @@ export default function Footer() {
               </div>
 
               <div className="flex items-start gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-emerald-400 block text-[10px] uppercase font-bold tracking-wider">Managing Director</span>
+                  <span className="text-white font-semibold">Sayyid Fazal Al Bukhari Al Qadiri</span>
+                  <span className="text-[10px] text-emerald-300 block">M.Com, Diploma in Arabic and Urdu</span>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5">
                 <Compass className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="text-emerald-400 block text-[10px] uppercase font-bold tracking-wider">Jurisprudential Scope</span>
